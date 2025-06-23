@@ -5,20 +5,30 @@ from flask_cors import CORS
 
 # === Initialize Flask App ===
 app = Flask(__name__)
-CORS(app)  # We will still manually handle CORS
+CORS(app, resources={r"/*": {"origins": "https://100-agnet-hackathon-frontend.vercel.app"}})
 
-# === Environment Variables ===
+# === CORS Preflight Handling ===
+@app.after_request
+def after_request(response):
+    response.headers["Access-Control-Allow-Origin"] = "https://100-agnet-hackathon-frontend.vercel.app"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
+
+# === API Keys ===
 TOGETHER_API_KEY = "578f49f0c591a12db071147ae6298c632b5f4388bdaf36704cfe2d59d150e7ec"
 TAVILY_KEY = "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"
 
-# === Together.ai Constants ===
-BASE_URL = "https://api.together.xyz/v1/chat/completions"
+if not TOGETHER_API_KEY or not TAVILY_KEY:
+    raise RuntimeError("Missing TOGETHER_API_KEY or TAVILY_API_KEY")
+
+# === Model Mapping ===
 MODEL_MAP = {
-    "llama": "meta-llama/Llama-3-8B-Instruct",  # smaller free model
+    "llama": "meta-llama/Llama-3-8B-Instruct",
     "mistral": "mistralai/Mistral-7B-Instruct-v0.1",
 }
 
-# === Utility: Prompt builder ===
+# === Prompt Builder ===
 def build_prompt(mode: str, effect: str) -> str:
     prompts = {
         "molecule-design":     f"Design a synthetic molecule that helps with: {effect}. Describe its structure, effect, and usage.",
@@ -29,22 +39,11 @@ def build_prompt(mode: str, effect: str) -> str:
     }
     return prompts.get(mode, prompts["molecule-design"])
 
-# === Manual CORS for preflight requests ===
-def cors_response():
-    return (
-        '', 200,
-        {
-            'Access-Control-Allow-Origin': 'https://100-agnet-hackathon-frontend.vercel.app',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS'
-        }
-    )
-
-# === /generate route with OPTIONS ===
+# === /generate endpoint ===
 @app.route("/generate", methods=["POST", "OPTIONS"])
 def generate_response():
     if request.method == "OPTIONS":
-        return cors_response()
+        return '', 200  # CORS preflight
 
     data = request.get_json(silent=True) or {}
     effect = (data.get("effect") or "").strip()
@@ -64,24 +63,24 @@ def generate_response():
 
     body = {
         "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.7,
+        "prompt": prompt,
+        "max_tokens": 512,
+        "temperature": 0.7
     }
 
     try:
-        res = requests.post(BASE_URL, headers=headers, json=body)
+        res = requests.post("https://api.together.xyz/inference", headers=headers, json=body)
         res.raise_for_status()
-        choices = res.json().get("choices", [])
-        message = choices[0].get("message", {}).get("content", "").strip() if choices else ""
-        return jsonify({"result": message})
+        result = res.json()
+        return jsonify({"result": result.get("output", "").strip()})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# === /search-evidence route with OPTIONS ===
+# === /search-evidence endpoint ===
 @app.route("/search-evidence", methods=["POST", "OPTIONS"])
 def search_evidence():
     if request.method == "OPTIONS":
-        return cors_response()
+        return '', 200  # CORS preflight
 
     data = request.get_json(silent=True) or {}
     query = (data.get("effect") or "").strip()
@@ -103,7 +102,7 @@ def search_evidence():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# === /health check ===
+# === Health Check ===
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True}), 200
