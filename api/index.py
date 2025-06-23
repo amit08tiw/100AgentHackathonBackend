@@ -56,8 +56,9 @@ def generate_response():
 
     prompt = build_prompt(mode, effect)
     model_url = "https://api-inference.huggingface.co/models/google/flan-t5-small"
-
+    HUGGINGFACE_TOKEN = "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"
     headers = {
+        "Authorization": f"Bearer {HUGGINGFACE_TOKEN}",
         "Content-Type": "application/json",
         # For public inference models, no key needed. But if you want more speed or quota, you can set "Authorization": f"Bearer {HUGGINGFACE_KEY}"
     }
