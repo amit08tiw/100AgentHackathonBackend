@@ -1,26 +1,11 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python"
-    }
+    { "src": "api/index.py", "use": "@vercel/python" }
   ],
   "routes": [
-    {
-      "src": "/generate",
-      "methods": ["POST"],
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/search-evidence",
-      "methods": ["POST"],
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/health",
-      "methods": ["GET"],
-      "dest": "api/index.py"
-    }
+    { "src": "/generate", "methods": ["POST", "OPTIONS"], "dest": "api/index.py" },
+    { "src": "/search-evidence", "methods": ["POST", "OPTIONS"], "dest": "api/index.py" },
+    { "src": "/health", "methods": ["GET"], "dest": "api/index.py" }
   ]
 }
