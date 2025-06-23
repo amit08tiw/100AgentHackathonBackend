@@ -67,7 +67,7 @@ def generate_response():
     }
 
     try:
-        r = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=body, timeout=30)
+        r = requests.post("v1/chat/completions", headers=headers, json=body, timeout=30)
         r.raise_for_status()
         result = r.json().get("choices", [])[0]["message"]["content"]
         return jsonify({"result": result.strip()})
