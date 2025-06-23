@@ -1,10 +1,11 @@
 {
-    "version": 2,
-    "builds": [
-      { "src": "api/index.py", "use": "@vercel/python" }
-    ],
-    "routes": [
-      { "src": "/generate",        "dest": "api/index.py" },
-      { "src": "/search-evidence", "dest": "api/index.py" }
-    ]
-  }
+  "version": 2,
+  "builds": [
+    { "src": "api/index.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/generate",        "dest": "api/index.py" },
+    { "src": "/search-evidence", "dest": "api/index.py" },
+    { "src": "/health",          "dest": "api/index.py" }
+  ]
+}
