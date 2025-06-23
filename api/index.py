@@ -47,40 +47,33 @@ def build_prompt(mode: str, effect: str) -> str:
 # ————————————————
 @app.route("/generate", methods=["POST"])
 def generate_response():
-    data      = request.get_json(silent=True) or {}
-    effect    = (data.get("effect") or "").strip()
-    model_key = data.get("model", "llama")
-    mode      = data.get("mode", "molecule-design")
+    data = request.get_json(silent=True) or {}
+    effect = (data.get("effect") or "").strip()
+    mode = data.get("mode", "molecule-design")
 
     if not effect:
         return jsonify({"error": "Missing effect input"}), 400
 
-    model  = MODEL_MAP.get(model_key, MODEL_MAP["llama"])
     prompt = build_prompt(mode, effect)
+    model_url = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
 
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_KEY}",
-        "Content-Type":  "application/json",
-        # "HTTP-Referer":  "https://100-agnet-hackathon-frontend.vercel.app",
-        # "X-Title":       "AgentNet BioForge"
+        "Content-Type": "application/json",
+        # For public inference models, no key needed. But if you want more speed or quota, you can set "Authorization": f"Bearer {HUGGINGFACE_KEY}"
     }
+
     body = {
-        "model":       model,
-        "messages":    [{"role":"user","content":prompt}],
-        "temperature": 0.7
+        "inputs": prompt
     }
 
     try:
-        res = requests.post(f"{BASE_URL}/chat/completions", headers=headers, json=body)
+        res = requests.post(model_url, headers=headers, json=body)
         res.raise_for_status()
-        choices = res.json().get("choices", [])
-        if not choices:
-            return jsonify({"error": "LLM returned no choices"}), 500
-        message = choices[0].get("message", {}).get("content", "").strip()
-        return jsonify({"result": message})
+        result = res.json()
 
-    except (RateLimitError, OpenAIError) as e:
-        return jsonify({"error": f"LLM API error: {e}"}), 503
+        # Hugging Face returns a list of dicts
+        output = result[0].get("generated_text", "").strip()
+        return jsonify({"result": output})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
