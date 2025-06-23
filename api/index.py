@@ -15,12 +15,11 @@ def after_request(resp):
     resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
     return resp
 
-# === API Keys (replace with your secrets or set as Vercel env vars) ===
-TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY") or "578f49f0c591a12db071147ae6298c632b5f4388bdaf36704cfe2d59d150e7ec"
-TAVILY_KEY = os.getenv("TAVILY_KEY") or "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"
-
+# === API Keys ===
+TOGETHER_API_KEY = "578f49f0c591a12db071147ae6298c632b5f4388bdaf36704cfe2d59d150e7ec"
+TAVILY_KEY = "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"
 if not TOGETHER_API_KEY or not TAVILY_KEY:
-    raise RuntimeError("Missing TOGETHER_API_KEY or TAVILY_KEY")
+    raise RuntimeError("Missing TOGETHER_API_KEY or TAVILY_API_KEY")
 
 # === Model Mapping ===
 MODEL_MAP = {
@@ -28,7 +27,7 @@ MODEL_MAP = {
     "mistral": "mistralai/Mistral-7B-Instruct-v0.1",
 }
 
-# === Prompt Template ===
+# === Prompt Builder ===
 def build_prompt(mode: str, effect: str) -> str:
     return {
         "molecule-design":     f"Design a synthetic molecule that helps with: {effect}. Describe its structure, effect, and usage.",
@@ -36,13 +35,13 @@ def build_prompt(mode: str, effect: str) -> str:
         "regulatory-readiness": f"What are the regulatory approval steps for a molecule targeting: {effect}? Include FDA and EMA requirements.",
         "comparison":          f"Compare two molecule strategies to achieve the effect: {effect}. Include structure, efficiency, and risk.",
         "version-history":     f"Show a version history of improvements for synthetic molecules developed to address: {effect}.",
-    }.get(mode, f"Design a synthetic molecule that helps with: {effect}.")
+    }.get(mode, "Describe a molecule that helps with: " + effect)
 
-# === /generate (Together AI) ===
+# === /generate endpoint ===
 @app.route("/generate", methods=["POST", "OPTIONS"])
 def generate_response():
     if request.method == "OPTIONS":
-        return "", 200  # CORS preflight response
+        return "", 200
 
     data = request.get_json(silent=True) or {}
     effect = (data.get("effect") or "").strip()
@@ -62,20 +61,20 @@ def generate_response():
 
     body = {
         "model": model,
-        "prompt": prompt,
-        "max_tokens": 512,
-        "temperature": 0.7
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+        "max_tokens": 512
     }
 
     try:
-        res = requests.post("https://api.together.xyz/inference", headers=headers, json=body, timeout=30)
-        res.raise_for_status()
-        result = res.json().get("output", "").strip()
-        return jsonify({"result": result})
+        r = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=body, timeout=30)
+        r.raise_for_status()
+        result = r.json().get("choices", [])[0]["message"]["content"]
+        return jsonify({"result": result.strip()})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# === /search-evidence (Tavily Search) ===
+# === /search-evidence endpoint ===
 @app.route("/search-evidence", methods=["POST", "OPTIONS"])
 def search_evidence():
     if request.method == "OPTIONS":
@@ -88,21 +87,18 @@ def search_evidence():
         return jsonify({"error": "Missing effect"}), 400
 
     try:
-        res = requests.post(
+        r = requests.post(
             "https://api.tavily.com/search",
             headers={"Authorization": f"Bearer {TAVILY_KEY}"},
-            json={
-                "query": f"{query} synthetic molecule biomedical research",
-                "search_depth": "advanced"
-            },
+            json={"query": f"{query} synthetic molecule biomedical research", "search_depth": "advanced"},
             timeout=20
         )
-        res.raise_for_status()
-        return jsonify({"evidence": res.json().get("results", [])})
+        r.raise_for_status()
+        return jsonify({"evidence": r.json().get("results", [])})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# === Health Check ===
+# === Health check ===
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"ok": True}), 200
+    return jsonify({"ok": True})
