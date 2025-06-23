@@ -55,7 +55,7 @@ def generate_response():
         return jsonify({"error": "Missing effect input"}), 400
 
     prompt = build_prompt(mode, effect)
-    model_url = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+    model_url = "https://api-inference.huggingface.co/models/google/flan-t5-small"
 
     headers = {
         "Content-Type": "application/json",
