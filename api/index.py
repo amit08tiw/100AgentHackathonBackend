@@ -22,13 +22,13 @@ if not OPENROUTER_KEY or not TAVILY_KEY:
     raise RuntimeError(
         "Missing one of OPENROUTER_API_KEY or TAVILY_API_KEY in environment"
     )
-
+# meta-llama/llama-4-maverick:free
 # ————————————————
 # 3) Constants & prompt builder
 # ————————————————
 BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_MAP = {
-    "llama":   "meta-llama/llama-4-maverick:free",
+    "llama":   "perplexity/pplx-7b-chat",
     "mistral": "mistralai/mistral-small-3.1-24b-instruct:free",
 }
 
