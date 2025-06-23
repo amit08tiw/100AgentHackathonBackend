@@ -5,12 +5,13 @@ from flask_cors import CORS
 
 # === Initialize Flask App ===
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://100-agnet-hackathon-frontend.vercel.app"}})
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # === CORS Preflight Handling ===
 @app.after_request
 def after_request(response):
-    response.headers["Access-Control-Allow-Origin"] = "https://100-agnet-hackathon-frontend.vercel.app"
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
     return response
