@@ -23,7 +23,7 @@ if not TOGETHER_API_KEY or not TAVILY_KEY:
 
 # === Model Mapping ===
 MODEL_MAP = {
-    "llama": "meta-llama/Llama-3-8B-Instruct",
+    "llama": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
     "mistral": "mistralai/Mistral-7B-Instruct-v0.1",
 }
 
@@ -67,7 +67,7 @@ def generate_response():
     }
 
     try:
-        r = requests.post("v1/chat/completions", headers=headers, json=body, timeout=30)
+        r = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=body, timeout=30)
         r.raise_for_status()
         result = r.json().get("choices", [])[0]["message"]["content"]
         return jsonify({"result": result.strip()})
