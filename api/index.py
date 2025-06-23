@@ -70,7 +70,7 @@ def generate_response():
     }
 
     try:
-        res = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=body)
+        res = requests.post("https://api.together.xyz/inference", headers=headers, json=body)
         res.raise_for_status()
         result = res.json()
         return jsonify({"result": result.get("output", "").strip()})
