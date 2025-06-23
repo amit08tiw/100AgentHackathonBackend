@@ -17,7 +17,7 @@ if not TOGETHER_API_KEY or not TAVILY_KEY:
 # === Together.ai Constants ===
 BASE_URL = "https://api.together.xyz/v1/chat/completions"
 MODEL_MAP = {
-    "llama": "togethercomputer/llama-2-7b-chat",
+    "llama": "togethercomputer/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
     "mistral": "mistralai/Mistral-7B-Instruct-v0.1",
 }
 
