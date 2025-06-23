@@ -62,7 +62,7 @@ def generate_response():
         "Authorization": f"Bearer {OPENROUTER_KEY}",
         "Content-Type":  "application/json",
         # "HTTP-Referer":  "https://100-agnet-hackathon-frontend.vercel.app",
-        "X-Title":       "AgentNet BioForge"
+        # "X-Title":       "AgentNet BioForge"
     }
     body = {
         "model":       model,
