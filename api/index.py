@@ -15,7 +15,7 @@ CORS(app)
 # ————————————————
 # 2) Read & validate your env-vars
 # ————————————————
-OPENROUTER_KEY = "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"
+OPENROUTER_KEY = "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"
 TAVILY_KEY     = "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"
 
 if not OPENROUTER_KEY or not TAVILY_KEY:
