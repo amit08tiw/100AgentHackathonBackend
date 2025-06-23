@@ -13,6 +13,8 @@ CORS(app)
 
 # === Environment Variables ===
 # On Vercel, set these in the Dashboard under Settings → Environment Variables
+os.environ["OPENROUTER_API_KEY"] = "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"
+os.environ["TAVILY_API_KEY"] = "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"
 OPENROUTER_KEY = os.environ["OPENROUTER_API_KEY"]
 TAVILY_KEY     = os.environ["TAVILY_API_KEY"]
 
