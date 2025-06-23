@@ -28,7 +28,7 @@ if not OPENROUTER_KEY or not TAVILY_KEY:
 # ————————————————
 BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_MAP = {
-    "llama":   "perplexity/pplx-7b-chat",
+    "llama":   "meta-llama/llama-4-maverick:free",
     "mistral": "mistralai/mistral-small-3.1-24b-instruct:free",
 }
 
