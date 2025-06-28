@@ -74,37 +74,50 @@ def generate_response():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
         
+
 @app.route("/patents", methods=["POST", "OPTIONS"])
-def generate_patent_response():
+def fetch_patents():
+    if request.method == "OPTIONS":
+        return "", 200
+
     data = request.get_json(silent=True) or {}
     effect = (data.get("effect") or "").strip()
     model_key = data.get("model", "llama")
-    mode = data.get("mode", "molecule-design")
+    mode = "patent"  # Optional, unused unless you want to tailor the prompt
 
     if not effect:
         return jsonify({"error": "Missing effect input"}), 400
 
     model = MODEL_MAP.get(model_key, MODEL_MAP["llama"])
-    prompt = build_prompt(mode, effect)
+    prompt = f"List recent patentable ideas, claims, or technologies related to: {effect}. Provide 3 real-world style titles and descriptions with potential patent URLs if any."
 
     headers = {
         "Authorization": f"Bearer {TOGETHER_API_KEY}",
         "Content-Type": "application/json"
     }
+
     body = {
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.7,
+        "temperature": 0.5,
+        "max_tokens": 512
     }
 
     try:
-        res = requests.post(BASE_URL, headers=headers, json=body)
-        res.raise_for_status()
-        choices = res.json().get("choices", [])
-        message = choices[0].get("message", {}).get("content", "").strip() if choices else ""
-        return jsonify({"result": message})
+        r = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=body, timeout=30)
+        r.raise_for_status()
+        result = r.json().get("choices", [])[0]["message"]["content"].strip()
+
+        # OPTIONAL: Structure fake patent links for demo
+        patents = [
+            {"title": line.strip(), "url": "https://patents.google.com/"}
+            for line in result.split("\n") if line.strip()
+        ][:3]
+
+        return jsonify({"patents": patents})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # === /search-evidence endpoint ===
 @app.route("/search-evidence", methods=["POST", "OPTIONS"])
