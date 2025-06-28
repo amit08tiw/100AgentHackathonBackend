@@ -74,43 +74,6 @@ def generate_response():
         return jsonify({"result": result.strip()})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-        
-
-@app.route("/patents", methods=["POST", "OPTIONS"])
-def handle_patents():
-    if request.method == "OPTIONS":
-        return jsonify({}), 200
-
-    data = request.get_json(silent=True) or {}
-    effect = (data.get("effect") or "").strip()
-    model_key = data.get("model", "llama")
-    mode = data.get("mode", "molecule-design")
-
-    if not effect:
-        return jsonify({"error": "Missing effect input"}), 400
-
-    model = MODEL_MAP.get(model_key, MODEL_MAP["llama"])
-    prompt = build_prompt(mode, effect)
-
-    headers = {
-        "Authorization": f"Bearer {TOGETHER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    body = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.7,
-        "max_tokens": 512
-    }
-
-    try:
-        r = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=body, timeout=30)
-        r.raise_for_status()
-        result = r.json().get("choices", [])[0]["message"]["content"]
-        return jsonify({"result": result.strip()})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 # === /search-evidence endpoint ===
