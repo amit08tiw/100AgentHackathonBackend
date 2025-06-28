@@ -37,6 +37,7 @@ def build_prompt(mode: str, effect: str) -> str:
         "comparison":          f"Compare two molecule strategies to achieve the effect: {effect}. Include structure, efficiency, and risk.",
         "patents":             f"Create a sample patent documents for the effect: {effect}. Provide sample title and other sample details that can be included as probable patentable documents .",
         "version-history":     f"Show a version history of improvements for synthetic molecules developed to address: {effect}.",
+        "sketch":              f"Generate an SVG sketch of a synthetic molecule for the biological effect: {effect}. Return only the SVG code."
     }.get(mode, "Describe a molecule that helps with: " + effect)
 
 # === /generate endpoint ===
@@ -65,7 +66,7 @@ def generate_response():
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
-        "max_tokens": 512
+        "max_tokens": 1024 if mode == "sketch" else 512
     }
 
     try:
