@@ -79,7 +79,7 @@ def generate_response():
 @app.route("/patents", methods=["POST", "OPTIONS"])
 def handle_patents():
     if request.method == "OPTIONS":
-        return "", 200
+        return jsonify({}), 200
 
     data = request.get_json(silent=True) or {}
     effect = (data.get("effect") or "").strip()
