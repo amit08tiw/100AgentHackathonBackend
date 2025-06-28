@@ -151,6 +151,3 @@ def search_evidence():
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True})
-
-
-why only /patents is failing for cors
