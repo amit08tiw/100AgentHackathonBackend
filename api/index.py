@@ -79,22 +79,18 @@ def generate_response():
 @app.route("/patents", methods=["POST", "OPTIONS"])
 def handle_patents():
     if request.method == "OPTIONS":
-        response = make_response("", 200)
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response, 200
+        return "", 200
 
     data = request.get_json(silent=True) or {}
     effect = (data.get("effect") or "").strip()
     model_key = data.get("model", "llama")
+    mode = data.get("mode", "molecule-design")
 
     if not effect:
         return jsonify({"error": "Missing effect input"}), 400
 
     model = MODEL_MAP.get(model_key, MODEL_MAP["llama"])
-    prompt = f"List recent patentable ideas, claims, or technologies related to: {effect}. Provide 3 real-world style titles and descriptions with potential patent URLs if any."
+    prompt = build_prompt(mode, effect)
 
     headers = {
         "Authorization": f"Bearer {TOGETHER_API_KEY}",
@@ -104,21 +100,15 @@ def handle_patents():
     body = {
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.5,
+        "temperature": 0.7,
         "max_tokens": 512
     }
 
     try:
         r = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=body, timeout=30)
         r.raise_for_status()
-        result = r.json().get("choices", [])[0]["message"]["content"].strip()
-
-        patents = [
-            {"title": line.strip(), "url": "https://patents.google.com/"}
-            for line in result.split("\n") if line.strip()
-        ][:3]
-
-        return jsonify({"patents": patents})
+        result = r.json().get("choices", [])[0]["message"]["content"]
+        return jsonify({"result": result.strip()})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
