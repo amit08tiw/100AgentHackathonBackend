@@ -79,7 +79,7 @@ def generate_response():
 @app.route("/patents", methods=["POST", "OPTIONS"])
 def handle_patents():
     if request.method == "OPTIONS":
-        response = make_response()
+        response = make_response("", 200)
         response.headers["Access-Control-Allow-Origin"] = "*"
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
