@@ -35,7 +35,7 @@ def build_prompt(mode: str, effect: str) -> str:
         "toxicity-report":     f"Generate a toxicity profile for a synthetic molecule intended to: {effect}. Include risks, side effects, and safety thresholds.",
         "regulatory-readiness": f"What are the regulatory approval steps for a molecule targeting: {effect}? Include FDA and EMA requirements.",
         "comparison":          f"Compare two molecule strategies to achieve the effect: {effect}. Include structure, efficiency, and risk.",
-        "patents":             f"Make a mock patent documents for the effect: {effect}. Provide title and other details.",
+        "patents":             f"Create a mock patent documents for the effect: {effect}. Provide title and other details that can be included as probable patentable documents .",
         "version-history":     f"Show a version history of improvements for synthetic molecules developed to address: {effect}.",
     }.get(mode, "Describe a molecule that helps with: " + effect)
 
