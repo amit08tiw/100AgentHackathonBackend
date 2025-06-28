@@ -74,8 +74,8 @@ def generate_response():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
         
-@app.route("/patents", methods=["POST"])
-def generate_response():
+@app.route("/patents", methods=["POST", "OPTIONS"])
+def generate_patent_response():
     data = request.get_json(silent=True) or {}
     effect = (data.get("effect") or "").strip()
     model_key = data.get("model", "llama")
