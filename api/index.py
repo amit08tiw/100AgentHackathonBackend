@@ -1,6 +1,7 @@
 import os
 import requests
 from flask import Flask, request, jsonify
+from flask import make_response
 from flask_cors import CORS
 
 # === Initialize Flask App & CORS ===
@@ -76,14 +77,13 @@ def generate_response():
         
 
 @app.route("/patents", methods=["POST", "OPTIONS"])
-def fetch_patents():
+def handle_patents():
     if request.method == "OPTIONS":
-        return "", 200
+        return make_response("", 200)
 
     data = request.get_json(silent=True) or {}
     effect = (data.get("effect") or "").strip()
     model_key = data.get("model", "llama")
-    mode = "patent"  # Optional, unused unless you want to tailor the prompt
 
     if not effect:
         return jsonify({"error": "Missing effect input"}), 400
@@ -108,7 +108,7 @@ def fetch_patents():
         r.raise_for_status()
         result = r.json().get("choices", [])[0]["message"]["content"].strip()
 
-        # OPTIONAL: Structure fake patent links for demo
+        # OPTIONAL: Structure as patents
         patents = [
             {"title": line.strip(), "url": "https://patents.google.com/"}
             for line in result.split("\n") if line.strip()
@@ -117,7 +117,6 @@ def fetch_patents():
         return jsonify({"patents": patents})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # === /search-evidence endpoint ===
 @app.route("/search-evidence", methods=["POST", "OPTIONS"])
